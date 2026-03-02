@@ -3,27 +3,31 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 
-/** Open311 GeoReport v2 service request shape (St. Louis flavour) */
+/**
+ * Open311 GeoReport v2 service request shape as returned by the St. Louis API.
+ * Note: the API returns ALL-CAPS field names.
+ * Note: LAT/LONG are Web Mercator (WKID 3857), matching SRX/SRY in the CSV data —
+ * despite the misleading field names.
+ */
 export interface Open311Request {
-  service_request_id: string;
-  status: string;
-  status_notes?: string;
-  service_name?: string;
-  service_code?: string;
-  description?: string;
-  agency_responsible?: string;
-  service_notice?: string;
-  requested_datetime?: string;
-  updated_datetime?: string;
-  expected_datetime?: string;
-  address?: string;
-  address_id?: string;
-  zipcode?: string;
-  lat?: string | number;
-  long?: string | number;
-  // St. Louis custom extensions
-  HIERARCHY_LEVEL?: number;
-  PARENT_SERVICE_CODE?: number;
+  SERVICE_REQUEST_ID: number | string;
+  STATUS: string;
+  STATUS_NOTES?: string;
+  SERVICE_NAME?: string;
+  SERVICE_CODE?: number | string;
+  DESCRIPTION?: string;
+  AGENCY_RESPONSIBLE?: string;
+  SERVICE_NOTICE?: string;
+  REQUESTED_DATETIME?: string;
+  UPDATED_DATETIME?: string;
+  EXPECTED_DATETIME?: string;
+  ADDRESS?: string;
+  ADDRESS_ID?: string;
+  ZIPCODE?: string;
+  /** Web Mercator Easting (SRX) — mislabeled by the API */
+  LAT?: number | string;
+  /** Web Mercator Northing (SRY) — mislabeled by the API */
+  LONG?: number | string;
 }
 
 const WINDOW_DAYS = 89; // stay under the 90-day API limit

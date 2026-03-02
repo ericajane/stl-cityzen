@@ -104,7 +104,7 @@ export class CsbSyncService {
     });
 
     const mapped = records
-      .filter((r) => r.service_request_id)
+      .filter((r) => r.SERVICE_REQUEST_ID)
       .map(mapRecord);
 
     upsertBatch(mapped);
@@ -112,23 +112,23 @@ export class CsbSyncService {
   }
 }
 
-/** Maps an Open311 response record to our SQLite column names. */
+/** Maps an Open311 response record (ALL-CAPS fields) to our SQLite column names. */
 function mapRecord(r: Open311Request) {
   return {
-    request_id: r.service_request_id,
-    status: r.status ?? null,
-    description: r.description ?? null,
-    plain_english_name: r.service_name ?? null,
-    problem_code: r.service_code ?? null,
-    public_resolution: r.status_notes ?? null,
-    date_time_init: r.requested_datetime ?? null,
-    date_time_closed: r.updated_datetime ?? null,
-    prj_complete_date: r.expected_datetime ?? null,
-    prob_address: r.address ?? null,
-    prob_zip: r.zipcode ?? null,
-    submit_to: r.agency_responsible ?? null,
-    // St. Louis uses Web Mercator for SRX/SRY; lat/long from Open311 may be absent
-    srx: r.long != null ? Number(r.long) : null,
-    sry: r.lat != null ? Number(r.lat) : null,
+    request_id: String(r.SERVICE_REQUEST_ID),
+    status: r.STATUS ?? null,
+    description: r.DESCRIPTION ?? null,
+    plain_english_name: r.SERVICE_NAME ?? null,
+    problem_code: r.SERVICE_CODE != null ? String(r.SERVICE_CODE) : null,
+    public_resolution: r.STATUS_NOTES ?? null,
+    date_time_init: r.REQUESTED_DATETIME ?? null,
+    date_time_closed: r.UPDATED_DATETIME ?? null,
+    prj_complete_date: r.EXPECTED_DATETIME ?? null,
+    prob_address: r.ADDRESS ?? null,
+    prob_zip: r.ZIPCODE ?? null,
+    submit_to: r.AGENCY_RESPONSIBLE ?? null,
+    // Despite the names, LAT = Web Mercator Easting (SRX), LONG = Northing (SRY)
+    srx: r.LAT != null ? Number(r.LAT) : null,
+    sry: r.LONG != null ? Number(r.LONG) : null,
   };
 }
