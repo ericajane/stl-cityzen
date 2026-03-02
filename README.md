@@ -101,6 +101,7 @@ npx nx serve frontend   # UI  → http://localhost:4200
 | `CORS_ORIGIN` | `http://localhost:4200` | Allowed CORS origin(s), comma-separated |
 | `CSB_API_KEY` | — | API key for the St. Louis CSB Open311 API (required for sync) |
 | `CSB_API_BASE_URL` | `https://www.stlouis-mo.gov/powernap/stlouis/api.cfm` | CSB API base URL |
+| `DATA_YEAR_FROM` | _(all years)_ | Ingest only CSV files for this year and later (e.g. `2025`) |
 
 Copy `.env.example` to `.env` and fill in your API key to enable live sync.
 
