@@ -72,6 +72,7 @@ npx nx serve frontend   # UI  → http://localhost:4200
 | `GET` | `/api/csb-requests` | Search requests (keyword, neighborhood, ward, status, group, date range, pagination) |
 | `GET` | `/api/csb-requests/stats/monthly` | Request counts grouped by month |
 | `GET` | `/api/csb-requests/filters` | Distinct values for all filter dropdowns |
+| `POST` | `/api/csb-requests/sync` | Pull new records from the live CSB API into SQLite |
 
 ### Search query params
 
@@ -98,6 +99,10 @@ npx nx serve frontend   # UI  → http://localhost:4200
 | `DB_PATH` | `data/csb.db` | Path to the SQLite database file |
 | `DATA_DIR` | `data/csb/` | Directory containing CSV source files |
 | `CORS_ORIGIN` | `http://localhost:4200` | Allowed CORS origin(s), comma-separated |
+| `CSB_API_KEY` | — | API key for the St. Louis CSB Open311 API (required for sync) |
+| `CSB_API_BASE_URL` | `https://www.stlouis-mo.gov/powernap/stlouis/api.cfm` | CSB API base URL |
+
+Copy `.env.example` to `.env` and fill in your API key to enable live sync.
 
 ---
 

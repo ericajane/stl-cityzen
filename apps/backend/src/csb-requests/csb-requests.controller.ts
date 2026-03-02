@@ -1,16 +1,22 @@
 import {
   Controller,
   Get,
+  Post,
   Query,
   ParseIntPipe,
   DefaultValuePipe,
+  HttpCode,
 } from '@nestjs/common';
 import { CsbRequestsService } from './csb-requests.service';
+import { CsbSyncService } from '../csb-api/csb-sync.service';
 import type { CsbRequestSearchParams } from '@org/types';
 
 @Controller('csb-requests')
 export class CsbRequestsController {
-  constructor(private readonly csbRequestsService: CsbRequestsService) {}
+  constructor(
+    private readonly csbRequestsService: CsbRequestsService,
+    private readonly syncService: CsbSyncService,
+  ) {}
 
   /**
    * GET /api/csb-requests
@@ -60,5 +66,15 @@ export class CsbRequestsController {
   @Get('filters')
   getFilterOptions() {
     return this.csbRequestsService.getFilterOptions();
+  }
+
+  /**
+   * POST /api/csb-requests/sync
+   * Triggers a manual sync from the St. Louis CSB API into SQLite.
+   */
+  @Post('sync')
+  @HttpCode(200)
+  async sync() {
+    return this.syncService.sync();
   }
 }
