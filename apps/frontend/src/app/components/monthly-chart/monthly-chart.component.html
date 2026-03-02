@@ -1,0 +1,13 @@
+<div class="bg-white rounded-xl shadow p-6">
+  @if (loading) {
+    <div class="flex items-center justify-center h-64 text-gray-400 text-sm">
+      Loading chart…
+    </div>
+  } @else if (monthlyData.length === 0) {
+    <div class="flex items-center justify-center h-64 text-gray-400 text-sm">
+      No data available. Drop CSV files in the <code class="font-mono">data/</code> directory and reload.
+    </div>
+  } @else {
+    <canvas baseChart [data]="chartData" [options]="chartOptions" type="bar"></canvas>
+  }
+</div>

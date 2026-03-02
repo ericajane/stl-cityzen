@@ -1,0 +1,93 @@
+<form (ngSubmit)="submit()" class="bg-white rounded-xl shadow p-6 space-y-4">
+  <h2 class="text-lg font-semibold text-gray-800">Search CSB Requests</h2>
+
+  <!-- Keyword -->
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-1">Keyword</label>
+    <input
+      type="text"
+      [(ngModel)]="params.keyword"
+      name="keyword"
+      placeholder="Address, description, request ID…"
+      class="w-full rounded-md border-gray-300 shadow-sm focus:border-stl-blue focus:ring-stl-blue text-sm"
+    />
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Neighborhood -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Neighborhood</label>
+      <select
+        [(ngModel)]="params.neighborhood"
+        name="neighborhood"
+        class="w-full rounded-md border-gray-300 shadow-sm focus:border-stl-blue focus:ring-stl-blue text-sm"
+      >
+        <option value="">All</option>
+        @for (n of filters.neighborhoods; track n) {
+          <option [value]="n">{{ n }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Ward -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Ward</label>
+      <select
+        [(ngModel)]="params.ward"
+        name="ward"
+        class="w-full rounded-md border-gray-300 shadow-sm focus:border-stl-blue focus:ring-stl-blue text-sm"
+      >
+        <option value="">All</option>
+        @for (w of filters.wards; track w) {
+          <option [value]="w">{{ w }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Status -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+      <select
+        [(ngModel)]="params.status"
+        name="status"
+        class="w-full rounded-md border-gray-300 shadow-sm focus:border-stl-blue focus:ring-stl-blue text-sm"
+      >
+        <option value="">All</option>
+        @for (s of filters.statuses; track s) {
+          <option [value]="s">{{ s }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Group -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Group</label>
+      <select
+        [(ngModel)]="params.group"
+        name="group"
+        class="w-full rounded-md border-gray-300 shadow-sm focus:border-stl-blue focus:ring-stl-blue text-sm"
+      >
+        <option value="">All</option>
+        @for (g of filters.groups; track g) {
+          <option [value]="g">{{ g }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <div class="flex gap-3">
+    <button
+      type="submit"
+      class="bg-stl-blue text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-blue-900 transition-colors"
+    >
+      Search
+    </button>
+    <button
+      type="button"
+      (click)="reset()"
+      class="bg-gray-100 text-gray-700 px-5 py-2 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
+    >
+      Reset
+    </button>
+  </div>
+</form>

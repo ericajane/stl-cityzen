@@ -1,0 +1,47 @@
+<div class="min-h-screen bg-gray-100">
+  <!-- Header -->
+  <header class="bg-stl-blue text-white shadow">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold tracking-tight">STL Cityzen</h1>
+        <p class="text-blue-200 text-sm">Citizen's Service Bureau Data Explorer</p>
+      </div>
+      <!-- Tab nav -->
+      <nav class="flex gap-1">
+        <button
+          (click)="setTab('search')"
+          [class]="activeTab === 'search'
+            ? 'bg-white text-stl-blue px-4 py-2 rounded-md text-sm font-medium'
+            : 'text-blue-100 hover:text-white px-4 py-2 rounded-md text-sm font-medium transition-colors'"
+        >
+          Search
+        </button>
+        <button
+          (click)="setTab('charts')"
+          [class]="activeTab === 'charts'
+            ? 'bg-white text-stl-blue px-4 py-2 rounded-md text-sm font-medium'
+            : 'text-blue-100 hover:text-white px-4 py-2 rounded-md text-sm font-medium transition-colors'"
+        >
+          Charts
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <!-- Search tab -->
+    @if (activeTab === 'search') {
+      <app-search (paramsChange)="onSearch($event)" />
+      <app-results-table
+        [result]="result"
+        [loading]="loading"
+        (pageChange)="onPageChange($event)"
+      />
+    }
+
+    <!-- Charts tab -->
+    @if (activeTab === 'charts') {
+      <app-monthly-chart />
+    }
+  </main>
+</div>

@@ -1,0 +1,75 @@
+<div class="bg-white rounded-xl shadow overflow-hidden">
+  <!-- Loading -->
+  @if (loading) {
+    <div class="flex items-center justify-center py-16 text-gray-400 text-sm">
+      Loading…
+    </div>
+  }
+
+  <!-- Empty -->
+  @if (!loading && result && result.total === 0) {
+    <div class="flex items-center justify-center py-16 text-gray-400 text-sm">
+      No results found.
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!loading && result && result.total > 0) {
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200 text-sm">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wide text-xs">Request ID</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wide text-xs">Problem</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wide text-xs">Address</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wide text-xs">Neighborhood</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wide text-xs">Ward</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wide text-xs">Status</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wide text-xs">Date Opened</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          @for (row of result.data; track trackById($index, row)) {
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-4 py-3 text-gray-600 font-mono text-xs">{{ row.requestId }}</td>
+              <td class="px-4 py-3 text-gray-800">{{ row.plainEnglishNameForProblemCode }}</td>
+              <td class="px-4 py-3 text-gray-600">{{ row.probAddress }}</td>
+              <td class="px-4 py-3 text-gray-600">{{ row.neighborhood }}</td>
+              <td class="px-4 py-3 text-gray-600">{{ row.ward }}</td>
+              <td class="px-4 py-3">
+                <span
+                  class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                  [class]="row.status === 'CLOSED' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'"
+                >
+                  {{ row.status }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-gray-500 text-xs">{{ row.dateTimeInit }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100 text-sm text-gray-600">
+      <span>{{ result.total | number }} results &mdash; page {{ result.page }} of {{ totalPages }}</span>
+      <div class="flex gap-2">
+        <button
+          (click)="goToPage(result.page - 1)"
+          [disabled]="result.page <= 1"
+          class="px-3 py-1 rounded border border-gray-300 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+        >
+          &larr; Prev
+        </button>
+        <button
+          (click)="goToPage(result.page + 1)"
+          [disabled]="result.page >= totalPages"
+          class="px-3 py-1 rounded border border-gray-300 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+        >
+          Next &rarr;
+        </button>
+      </div>
+    </div>
+  }
+</div>
