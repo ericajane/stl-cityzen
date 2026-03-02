@@ -45,7 +45,7 @@ npm install
 
 ### 2. Obtain the CSV data
 
-Place the CSB annual CSV files in `data/csb/`. Each file should be named by year (e.g. `2024.csv`) and use the standard CSB column headers.
+Download the CSB annual CSV files from the [City of St. Louis open data portal](https://www.stlouis-mo.gov/data/datasets/dataset.cfm?id=5) and place them in `data/csb/`. Each file should be named by year (e.g. `2024.csv`) and use the standard CSB column headers.
 
 ### 3. Ingest CSVs into SQLite
 
