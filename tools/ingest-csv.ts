@@ -47,12 +47,14 @@ const COLUMN_MAP: Record<string, string> = {
   PROBLEMSID: 'problems_id',
   PROBZIP: 'prob_zip',
   PUBLICRESOLUTION: 'public_resolution',
+  SRX: 'srx',
+  SRY: 'sry',
   STATUS: 'status',
   SUBMITTO: 'submit_to',
   WARD: 'ward',
 };
 
-const NUMERIC_COLS = new Set<string>();
+const NUMERIC_COLS = new Set(['srx', 'sry']);
 
 // ---------------------------------------------------------------------------
 // DB setup

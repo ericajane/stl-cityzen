@@ -90,12 +90,12 @@ export class CsbSyncService {
         request_id, status, description, plain_english_name,
         problem_code, public_resolution, date_time_init,
         date_time_closed, prj_complete_date, prob_address,
-        prob_zip, submit_to
+        prob_zip, submit_to, srx, sry
       ) VALUES (
         @request_id, @status, @description, @plain_english_name,
         @problem_code, @public_resolution, @date_time_init,
         @date_time_closed, @prj_complete_date, @prob_address,
-        @prob_zip, @submit_to
+        @prob_zip, @submit_to, @srx, @sry
       )
     `);
 
@@ -127,5 +127,8 @@ function mapRecord(r: Open311Request) {
     prob_address: r.ADDRESS ?? null,
     prob_zip: r.ZIPCODE ?? null,
     submit_to: r.AGENCY_RESPONSIBLE ?? null,
+    // API returns Web Mercator coords as LAT/LONG (matching SRX/SRY in CSV data)
+    srx: r.LAT != null ? Number(r.LAT) : null,
+    sry: r.LONG != null ? Number(r.LONG) : null,
   };
 }

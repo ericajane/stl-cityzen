@@ -22,6 +22,8 @@ export interface CsbRequest {
   problemsId: string;
   probZip: string;
   publicResolution: string;
+  srx: number | null;
+  sry: number | null;
   status: string;
   submitTo: string;
   ward: string;

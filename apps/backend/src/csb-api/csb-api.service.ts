@@ -22,6 +22,10 @@ export interface Open311Request {
   ADDRESS?: string;
   ADDRESS_ID?: string;
   ZIPCODE?: string;
+  /** Web Mercator Easting (SRX) — mislabeled by the API */
+  LAT?: number | string;
+  /** Web Mercator Northing (SRY) — mislabeled by the API */
+  LONG?: number | string;
 }
 
 const WINDOW_DAYS = 89; // stay under the 90-day API limit

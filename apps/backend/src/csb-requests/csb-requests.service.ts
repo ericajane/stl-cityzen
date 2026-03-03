@@ -35,6 +35,8 @@ function rowToRequest(row: Record<string, unknown>): CsbRequest {
     problemsId: row['problems_id'] as string,
     probZip: row['prob_zip'] as string,
     publicResolution: row['public_resolution'] as string,
+    srx: row['srx'] as number | null,
+    sry: row['sry'] as number | null,
     status: row['status'] as string,
     submitTo: row['submit_to'] as string,
     ward: row['ward'] as string,
