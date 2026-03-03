@@ -6,8 +6,6 @@ import { firstValueFrom } from 'rxjs';
 /**
  * Open311 GeoReport v2 service request shape as returned by the St. Louis API.
  * Note: the API returns ALL-CAPS field names.
- * Note: LAT/LONG are Web Mercator (WKID 3857), matching SRX/SRY in the CSV data —
- * despite the misleading field names.
  */
 export interface Open311Request {
   SERVICE_REQUEST_ID: number | string;
@@ -24,10 +22,6 @@ export interface Open311Request {
   ADDRESS?: string;
   ADDRESS_ID?: string;
   ZIPCODE?: string;
-  /** Web Mercator Easting (SRX) — mislabeled by the API */
-  LAT?: number | string;
-  /** Web Mercator Northing (SRY) — mislabeled by the API */
-  LONG?: number | string;
 }
 
 const WINDOW_DAYS = 89; // stay under the 90-day API limit

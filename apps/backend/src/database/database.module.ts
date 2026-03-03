@@ -50,8 +50,6 @@ export const DATABASE_TOKEN = 'SQLITE_DATABASE';
             problems_id       TEXT,
             prob_zip          TEXT,
             public_resolution TEXT,
-            srx               REAL,
-            sry               REAL,
             status            TEXT,
             submit_to         TEXT,
             ward              TEXT
