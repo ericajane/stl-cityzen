@@ -24,7 +24,7 @@
       >
         <option value="">All</option>
         @for (n of filters.neighborhoods; track n) {
-          <option [value]="n">{{ n }}</option>
+          <option [value]="n">{{ neighborhoodLabel(n) }}</option>
         }
       </select>
     </div>

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import type { CsbFilterOptions, CsbRequestSearchParams } from '@org/types';
 import { CsbRequestsService } from '../../services/csb-requests.service';
+import { neighborhoodLabel } from '../../constants/neighborhoods';
 
 @Component({
   selector: 'app-search',
@@ -23,6 +24,8 @@ export class SearchComponent implements OnInit {
     problemCodes: [],
     years: [],
   };
+
+  readonly neighborhoodLabel = neighborhoodLabel;
 
   readonly months = [
     { value: 1, label: 'January' }, { value: 2, label: 'February' },
