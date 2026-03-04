@@ -36,6 +36,8 @@ export interface CsbRequestSearchParams {
   status?: string;
   group?: string;
   problemCode?: string;
+  year?: number;
+  month?: number;
   dateFrom?: string;
   dateTo?: string;
   page?: number;
@@ -63,4 +65,5 @@ export interface CsbFilterOptions {
   statuses: string[];
   groups: string[];
   problemCodes: string[];
+  years: number[];
 }

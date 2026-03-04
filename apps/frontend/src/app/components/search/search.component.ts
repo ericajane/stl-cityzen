@@ -21,7 +21,17 @@ export class SearchComponent implements OnInit {
     statuses: [],
     groups: [],
     problemCodes: [],
+    years: [],
   };
+
+  readonly months = [
+    { value: 1, label: 'January' }, { value: 2, label: 'February' },
+    { value: 3, label: 'March' },   { value: 4, label: 'April' },
+    { value: 5, label: 'May' },     { value: 6, label: 'June' },
+    { value: 7, label: 'July' },    { value: 8, label: 'August' },
+    { value: 9, label: 'September' },{ value: 10, label: 'October' },
+    { value: 11, label: 'November' },{ value: 12, label: 'December' },
+  ];
 
   params: CsbRequestSearchParams = {
     keyword: '',
@@ -29,6 +39,8 @@ export class SearchComponent implements OnInit {
     ward: '',
     status: '',
     group: '',
+    year: undefined,
+    month: undefined,
     page: 1,
     pageSize: 25,
   };
@@ -42,7 +54,7 @@ export class SearchComponent implements OnInit {
   }
 
   reset() {
-    this.params = { keyword: '', neighborhood: '', ward: '', status: '', group: '', page: 1, pageSize: 25 };
+    this.params = { keyword: '', neighborhood: '', ward: '', status: '', group: '', year: undefined, month: undefined, page: 1, pageSize: 25 };
     this.paramsChange.emit({ ...this.params });
   }
 }

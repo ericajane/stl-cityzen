@@ -68,6 +68,8 @@ export class CsbRequestsService implements OnModuleInit {
       status,
       group,
       problemCode,
+      year,
+      month,
       dateFrom,
       dateTo,
       page = 1,
@@ -93,6 +95,8 @@ export class CsbRequestsService implements OnModuleInit {
     if (status)       { conditions.push('status = ?');       bindings.push(status); }
     if (group)        { conditions.push('group_name = ?');   bindings.push(group); }
     if (problemCode)  { conditions.push('problem_code = ?'); bindings.push(problemCode); }
+    if (year)         { conditions.push("CAST(strftime('%Y', date_time_init) AS INTEGER) = ?"); bindings.push(year); }
+    if (month)        { conditions.push("CAST(strftime('%m', date_time_init) AS INTEGER) = ?"); bindings.push(month); }
     if (dateFrom)     { conditions.push('date_time_init >= ?'); bindings.push(dateFrom); }
     if (dateTo)       { conditions.push('date_time_init <= ?'); bindings.push(dateTo); }
 
@@ -151,12 +155,24 @@ export class CsbRequestsService implements OnModuleInit {
           .all() as Record<string, string>[]
       ).map((r) => r[col]);
 
+    const years = (
+      this.db
+        .prepare(
+          `SELECT DISTINCT CAST(strftime('%Y', date_time_init) AS INTEGER) AS year
+           FROM csb_requests
+           WHERE date_time_init IS NOT NULL AND date_time_init != ''
+           ORDER BY year DESC`,
+        )
+        .all() as { year: number }[]
+    ).map((r) => r.year);
+
     return {
       neighborhoods: distinct('neighborhood'),
       wards: distinct('ward'),
       statuses: distinct('status'),
       groups: distinct('group_name'),
       problemCodes: distinct('problem_code'),
+      years,
     };
   }
 }
