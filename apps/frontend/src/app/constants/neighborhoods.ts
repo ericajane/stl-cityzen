@@ -91,11 +91,15 @@ export const NEIGHBORHOOD_NAMES: Record<number, string> = {
  */
 export function neighborhoodName(raw: string | null | undefined): string | null {
   if (!raw) return null;
-  const trimmed = raw.trim().replace(/\s+/g, '').replace(/o$/i, '0'); // fix "56o" → "560"... but 56 is valid
-  // Special case: already a name in the data
-  if (!/^\d+$/.test(trimmed)) return raw.trim() || null;
-  const n = parseInt(trimmed, 10);
-  return NEIGHBORHOOD_NAMES[n] ?? null;
+  const trimmed = raw.trim().replace(/\s+/g, '').replace(/o$/i, '0'); // fix "56o" → "56"
+  if (/^\d+$/.test(trimmed)) {
+    const n = parseInt(trimmed, 10);
+    return NEIGHBORHOOD_NAMES[n] ?? null;
+  }
+  // Pass through values that contain letters (already a name like "St. Louis Hills")
+  if (/[a-zA-Z]/.test(raw)) return raw.trim();
+  // Pure punctuation/symbols — treat as noise
+  return null;
 }
 
 /**
