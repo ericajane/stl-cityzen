@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SearchComponent } from './components/search/search.component';
 import { ResultsTableComponent } from './components/results-table/results-table.component';
@@ -17,6 +17,7 @@ type Tab = 'search' | 'charts';
 })
 export class App {
   private readonly csbService = inject(CsbRequestsService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   activeTab: Tab = 'search';
   loading = false;
@@ -43,8 +44,12 @@ export class App {
       next: (r) => {
         this.result = r;
         this.loading = false;
+        this.cdr.detectChanges();
       },
-      error: () => (this.loading = false),
+      error: () => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
     });
   }
 }

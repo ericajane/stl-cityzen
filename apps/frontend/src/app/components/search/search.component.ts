@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
+import { Component, ChangeDetectorRef, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import type { CsbFilterOptions, CsbRequestSearchParams } from '@org/types';
@@ -15,6 +15,7 @@ export class SearchComponent implements OnInit {
   @Output() paramsChange = new EventEmitter<CsbRequestSearchParams>();
 
   private readonly csbService = inject(CsbRequestsService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   filters: CsbFilterOptions = {
     neighborhoods: [],
@@ -49,7 +50,10 @@ export class SearchComponent implements OnInit {
   };
 
   ngOnInit() {
-    this.csbService.getFilterOptions().subscribe((f) => (this.filters = f));
+    this.csbService.getFilterOptions().subscribe((f) => {
+      this.filters = f;
+      this.cdr.detectChanges();
+    });
   }
 
   submit() {
