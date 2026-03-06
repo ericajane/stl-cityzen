@@ -113,4 +113,4 @@ Copy `.env.example` to `.env` and fill in your API key to enable live sync.
 - [ ] Additional charts (by ward, by problem type, year-over-year comparison)
 - [ ] Map view (SRX/SRY coordinates are Web Mercator — convert to WGS84 for mapping)
 - [ ] GraphQL API layer (`@nestjs/graphql` — architecture is ready)
-- [ ] Live data via City of St. Louis API (replacing CSV files once API key is available)
+- [DONE ] Live data via City of St. Louis API (replacing CSV files once API key is available)
