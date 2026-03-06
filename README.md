@@ -11,7 +11,7 @@ The app lets users search and visualize CSB request data spanning 2008 to the pr
 | Layer | Technology |
 |---|---|
 | Monorepo | [Nx 22](https://nx.dev) |
-| Frontend | Angular 19 (standalone components), Tailwind CSS v3, Chart.js |
+| Frontend | Angular 17 (standalone components), Tailwind CSS v3, Chart.js |
 | Backend | NestJS, REST API |
 | Database | SQLite via `better-sqlite3` (local, file-based) |
 | Shared types | `libs/shared/types` — TypeScript interfaces used by both apps |
