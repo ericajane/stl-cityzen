@@ -4,8 +4,7 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "isolatedModules": true,
-    "emitDecoratorMetadata": false,
-    "module": "preserve"
+    "emitDecoratorMetadata": false
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
