@@ -4,6 +4,8 @@ A data explorer for the City of St. Louis [Citizen's Service Bureau (CSB)](https
 
 The app lets users search and visualize CSB request data spanning 2008 to the present: filter by neighborhood, ward, problem type, and status; page through results; and view charts like requests per month.
 
+
+
 ---
 
 ## Stack
@@ -99,7 +101,7 @@ npx nx serve frontend   # UI  → http://localhost:4200
 | `DB_PATH` | `data/csb.db` | Path to the SQLite database file |
 | `DATA_DIR` | `data/csb/` | Directory containing CSV source files |
 | `CORS_ORIGIN` | `http://localhost:4200` | Allowed CORS origin(s), comma-separated |
-| `CSB_API_KEY` | — | API key for the St. Louis CSB Open311 API (required for sync) |
+| `CSB_API_KEY` | (your key here) | API key for the St. Louis CSB Open311 API (required for sync) |
 | `CSB_API_BASE_URL` | `https://www.stlouis-mo.gov/powernap/stlouis/api.cfm` | CSB API base URL |
 | `DATA_YEAR_FROM` | _(all years)_ | Ingest only CSV files for this year and later (e.g. `2025`) |
 
