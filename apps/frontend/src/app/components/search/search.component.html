@@ -24,7 +24,7 @@
       >
         <option value="">All</option>
         @for (n of filters.neighborhoods; track n) {
-          <option [value]="n">{{ n }}</option>
+          <option [value]="n">{{ neighborhoodLabel(n) }}</option>
         }
       </select>
     </div>
@@ -70,6 +70,37 @@
         <option value="">All</option>
         @for (g of filters.groups; track g) {
           <option [value]="g">{{ g }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- Year / Month -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+      <select
+        [(ngModel)]="params.year"
+        name="year"
+        class="w-full rounded-md border-gray-300 shadow-sm focus:border-stl-blue focus:ring-stl-blue text-sm"
+      >
+        <option [ngValue]="undefined">All</option>
+        @for (y of filters.years; track y) {
+          <option [ngValue]="y">{{ y }}</option>
+        }
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Month</label>
+      <select
+        [(ngModel)]="params.month"
+        name="month"
+        class="w-full rounded-md border-gray-300 shadow-sm focus:border-stl-blue focus:ring-stl-blue text-sm"
+      >
+        <option [ngValue]="undefined">All</option>
+        @for (m of months; track m.value) {
+          <option [ngValue]="m.value">{{ m.label }}</option>
         }
       </select>
     </div>

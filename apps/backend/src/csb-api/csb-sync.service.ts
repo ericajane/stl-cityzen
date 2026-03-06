@@ -127,7 +127,7 @@ function mapRecord(r: Open311Request) {
     prob_address: r.ADDRESS ?? null,
     prob_zip: r.ZIPCODE ?? null,
     submit_to: r.AGENCY_RESPONSIBLE ?? null,
-    // Despite the names, LAT = Web Mercator Easting (SRX), LONG = Northing (SRY)
+    // API returns Web Mercator coords as LAT/LONG (matching SRX/SRY in CSV data)
     srx: r.LAT != null ? Number(r.LAT) : null,
     sry: r.LONG != null ? Number(r.LONG) : null,
   };

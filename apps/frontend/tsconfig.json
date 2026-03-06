@@ -4,8 +4,7 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "isolatedModules": true,
-    "emitDecoratorMetadata": false,
-    "module": "preserve"
+    "emitDecoratorMetadata": false
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
@@ -18,6 +17,9 @@
   "references": [
     {
       "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
     }
   ]
 }

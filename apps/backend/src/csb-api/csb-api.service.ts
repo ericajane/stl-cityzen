@@ -6,8 +6,6 @@ import { firstValueFrom } from 'rxjs';
 /**
  * Open311 GeoReport v2 service request shape as returned by the St. Louis API.
  * Note: the API returns ALL-CAPS field names.
- * Note: LAT/LONG are Web Mercator (WKID 3857), matching SRX/SRY in the CSV data —
- * despite the misleading field names.
  */
 export interface Open311Request {
   SERVICE_REQUEST_ID: number | string;

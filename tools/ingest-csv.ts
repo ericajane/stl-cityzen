@@ -18,6 +18,7 @@ const CSV_DIR = join(WORKSPACE_ROOT, 'data', 'csb');
 const DB_PATH = join(WORKSPACE_ROOT, 'data', 'csb.db');
 const BATCH_SIZE = 5_000;
 const FORCE = process.argv.includes('--force');
+const YEAR_FROM = process.env['DATA_YEAR_FROM'] ? parseInt(process.env['DATA_YEAR_FROM'], 10) : null;
 
 // ---------------------------------------------------------------------------
 // Column mapping: CSV header (quoted or unquoted) → DB column name
@@ -207,9 +208,18 @@ async function main() {
   let grandTotal = 0;
   let skipped = 0;
 
-  console.log(`\nIngesting CSVs from ${CSV_DIR} → ${DB_PATH}\n`);
+  console.log(`\nIngesting CSVs from ${CSV_DIR} → ${DB_PATH}`);
+  if (YEAR_FROM) console.log(`Filtering to years >= ${YEAR_FROM} (DATA_YEAR_FROM)\n`);
+  else console.log();
 
   for (const file of files) {
+    const fileYear = parseInt(file.replace(/\.csv$/i, ''), 10);
+    if (YEAR_FROM && !isNaN(fileYear) && fileYear < YEAR_FROM) {
+      console.log(`  ${file}: skipped (before DATA_YEAR_FROM=${YEAR_FROM})`);
+      skipped++;
+      continue;
+    }
+
     if (!FORCE && alreadyIngested.has(file)) {
       console.log(`  ${file}: already ingested (use --force to re-import)`);
       skipped++;

@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import type { CsbRequest, CsbRequestSearchResult } from '@org/types';
+import { neighborhoodLabel } from '../../constants/neighborhoods';
 
 @Component({
   selector: 'app-results-table',
@@ -9,6 +10,8 @@ import type { CsbRequest, CsbRequestSearchResult } from '@org/types';
   templateUrl: './results-table.component.html',
 })
 export class ResultsTableComponent {
+  readonly neighborhoodLabel = neighborhoodLabel;
+
   @Input() result: CsbRequestSearchResult | null = null;
   @Input() loading = false;
   @Output() pageChange = new EventEmitter<number>();
