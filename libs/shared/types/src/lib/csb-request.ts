@@ -59,6 +59,11 @@ export interface MonthlyCount {
   count: number;
 }
 
+export interface GroupCount {
+  group: string;
+  count: number;
+}
+
 export interface CsbFilterOptions {
   neighborhoods: string[];
   wards: string[];

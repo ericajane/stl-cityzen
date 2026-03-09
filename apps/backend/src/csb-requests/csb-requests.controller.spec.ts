@@ -6,6 +6,7 @@ import { CsbSyncService } from '../csb-api/csb-sync.service';
 const mockSearch = jest.fn();
 const mockGetMonthlyStats = jest.fn();
 const mockGetFilterOptions = jest.fn();
+const mockGetGroupStats = jest.fn();
 const mockSync = jest.fn();
 
 describe('CsbRequestsController', () => {
@@ -17,7 +18,7 @@ describe('CsbRequestsController', () => {
     const module = await Test.createTestingModule({
       controllers: [CsbRequestsController],
       providers: [
-        { provide: CsbRequestsService, useValue: { search: mockSearch, getMonthlyStats: mockGetMonthlyStats, getFilterOptions: mockGetFilterOptions } },
+        { provide: CsbRequestsService, useValue: { search: mockSearch, getMonthlyStats: mockGetMonthlyStats, getFilterOptions: mockGetFilterOptions, getGroupStats: mockGetGroupStats } },
         { provide: CsbSyncService, useValue: { sync: mockSync } },
       ],
     }).compile();
@@ -105,6 +106,28 @@ describe('CsbRequestsController', () => {
       mockGetFilterOptions.mockReturnValue(options);
 
       expect(controller.getFilterOptions()).toBe(options);
+    });
+  });
+
+  describe('getGroupStats', () => {
+    it('delegates to service with no filters', () => {
+      const data = [{ group: 'Streets', count: 10 }];
+      mockGetGroupStats.mockReturnValue(data);
+
+      expect(controller.getGroupStats(undefined, 0, 0)).toBe(data);
+      expect(mockGetGroupStats).toHaveBeenCalledWith(undefined, undefined, undefined);
+    });
+
+    it('passes neighborhood, year, and month to service', () => {
+      mockGetGroupStats.mockReturnValue([]);
+      controller.getGroupStats('27', 2025, 1);
+      expect(mockGetGroupStats).toHaveBeenCalledWith('27', 2025, 1);
+    });
+
+    it('converts year=0 and month=0 to undefined', () => {
+      mockGetGroupStats.mockReturnValue([]);
+      controller.getGroupStats(undefined, 0, 0);
+      expect(mockGetGroupStats).toHaveBeenCalledWith(undefined, undefined, undefined);
     });
   });
 

@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { CsbRequestsService } from './csb-requests.service';
-import type { CsbRequestSearchResult, CsbFilterOptions, MonthlyCount } from '@org/types';
+import type { CsbRequestSearchResult, CsbFilterOptions, MonthlyCount, GroupCount } from '@org/types';
 
 const BASE = 'http://localhost:3001/api/csb-requests';
 
@@ -102,6 +102,38 @@ describe('CsbRequestsService', () => {
       const req = httpMock.expectOne(`${BASE}/filters`);
       expect(req.request.method).toBe('GET');
       req.flush(opts);
+    });
+  });
+
+  describe('getGroupStats', () => {
+    it('GET /csb-requests/stats/by-group with no filters', () => {
+      const data: GroupCount[] = [{ group: 'Streets', count: 42 }];
+      service.getGroupStats().subscribe((r) => expect(r).toEqual(data));
+
+      const req = httpMock.expectOne((r) => r.url === `${BASE}/stats/by-group`);
+      expect(req.request.method).toBe('GET');
+      expect(req.request.params.keys()).toHaveLength(0);
+      req.flush(data);
+    });
+
+    it('sends neighborhood, year, and month as query params', () => {
+      service.getGroupStats('27', 2025, 3).subscribe();
+
+      const req = httpMock.expectOne((r) => r.url === `${BASE}/stats/by-group`);
+      expect(req.request.params.get('neighborhood')).toBe('27');
+      expect(req.request.params.get('year')).toBe('2025');
+      expect(req.request.params.get('month')).toBe('3');
+      req.flush([]);
+    });
+
+    it('omits params that are not provided', () => {
+      service.getGroupStats(undefined, 2025).subscribe();
+
+      const req = httpMock.expectOne((r) => r.url === `${BASE}/stats/by-group`);
+      expect(req.request.params.has('neighborhood')).toBe(false);
+      expect(req.request.params.get('year')).toBe('2025');
+      expect(req.request.params.has('month')).toBe(false);
+      req.flush([]);
     });
   });
 });

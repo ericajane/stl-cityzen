@@ -73,6 +73,23 @@ export class CsbRequestsController {
   }
 
   /**
+   * GET /api/csb-requests/stats/by-group
+   * Returns request counts grouped by problem group, with optional filters.
+   */
+  @Get('stats/by-group')
+  getGroupStats(
+    @Query('neighborhood') neighborhood?: string,
+    @Query('year', new DefaultValuePipe(0), ParseIntPipe) yearRaw = 0,
+    @Query('month', new DefaultValuePipe(0), ParseIntPipe) monthRaw = 0,
+  ) {
+    return this.csbRequestsService.getGroupStats(
+      neighborhood,
+      yearRaw || undefined,
+      monthRaw || undefined,
+    );
+  }
+
+  /**
    * POST /api/csb-requests/sync
    * Triggers a manual sync from the St. Louis CSB API into SQLite.
    */

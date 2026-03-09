@@ -7,6 +7,7 @@ import type {
   CsbRequestSearchResult,
   CsbFilterOptions,
   MonthlyCount,
+  GroupCount,
 } from '@org/types';
 
 /** Maps DB snake_case column names to CsbRequest camelCase fields. */
@@ -184,5 +185,28 @@ export class CsbRequestsService implements OnModuleInit {
       problemCodes: distinct('problem_code'),
       years,
     };
+  }
+
+  getGroupStats(neighborhood?: string, year?: number, month?: number): GroupCount[] {
+    const conditions: string[] = [
+      "group_name IS NOT NULL AND group_name != ''",
+    ];
+    const bindings: unknown[] = [];
+
+    if (neighborhood) { conditions.push('neighborhood = ?');                                          bindings.push(neighborhood); }
+    if (year)         { conditions.push("CAST(strftime('%Y', date_time_init) AS INTEGER) = ?");       bindings.push(year); }
+    if (month)        { conditions.push("CAST(strftime('%m', date_time_init) AS INTEGER) = ?");       bindings.push(month); }
+
+    return (
+      this.db
+        .prepare(
+          `SELECT group_name AS \`group\`, COUNT(*) AS count
+           FROM csb_requests
+           WHERE ${conditions.join(' AND ')}
+           GROUP BY group_name
+           ORDER BY count DESC`,
+        )
+        .all(...bindings) as GroupCount[]
+    );
   }
 }
