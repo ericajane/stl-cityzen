@@ -284,6 +284,39 @@ describe('CsbRequestsService', () => {
     it('returns empty array when table is empty', () => {
       expect(service.getMonthlyStats()).toEqual([]);
     });
+
+    it('excludes the current month', () => {
+      const now = new Date();
+      const currentMonthDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-15T00:00:00.000Z`;
+      const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 15).toISOString();
+      insertRow(db, { request_id: 'current', date_time_init: currentMonthDate });
+      insertRow(db, { request_id: 'past', date_time_init: lastMonthDate });
+
+      const stats = service.getMonthlyStats();
+      const requestIds = stats.flatMap((s) => s.count);
+      // current month should not appear; past month should
+      expect(stats.some((s) => s.year === now.getFullYear() && s.month === now.getMonth() + 1)).toBe(false);
+      expect(stats.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('filters by neighborhood using exact match', () => {
+      insertRow(db, { request_id: 'r1', neighborhood: '27', date_time_init: '2025-01-10T00:00:00.000Z' });
+      insertRow(db, { request_id: 'r2', neighborhood: '15', date_time_init: '2025-01-20T00:00:00.000Z' });
+      insertRow(db, { request_id: 'r3', neighborhood: '27', date_time_init: '2025-02-05T00:00:00.000Z' });
+
+      const stats = service.getMonthlyStats('27');
+      const totalCount = stats.reduce((sum, s) => sum + s.count, 0);
+      expect(totalCount).toBe(2);
+    });
+
+    it('returns all neighborhoods when no neighborhood filter given', () => {
+      insertRow(db, { request_id: 'r1', neighborhood: '27', date_time_init: '2025-01-10T00:00:00.000Z' });
+      insertRow(db, { request_id: 'r2', neighborhood: '15', date_time_init: '2025-01-20T00:00:00.000Z' });
+
+      const stats = service.getMonthlyStats();
+      const totalCount = stats.reduce((sum, s) => sum + s.count, 0);
+      expect(totalCount).toBe(2);
+    });
   });
 
   describe('getFilterOptions', () => {

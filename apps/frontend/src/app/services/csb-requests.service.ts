@@ -24,8 +24,9 @@ export class CsbRequestsService {
     return this.http.get<CsbRequestSearchResult>(this.base, { params: httpParams });
   }
 
-  getMonthlyStats(): Observable<MonthlyCount[]> {
-    return this.http.get<MonthlyCount[]>(`${this.base}/stats/monthly`);
+  getMonthlyStats(neighborhood?: string): Observable<MonthlyCount[]> {
+    const params = neighborhood ? new HttpParams().set('neighborhood', neighborhood) : undefined;
+    return this.http.get<MonthlyCount[]>(`${this.base}/stats/monthly`, { params });
   }
 
   getFilterOptions(): Observable<CsbFilterOptions> {

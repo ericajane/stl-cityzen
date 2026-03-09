@@ -103,6 +103,33 @@ export function neighborhoodName(raw: string | null | undefined): string | null 
 }
 
 /**
+ * Deduplicates a raw neighborhood list from the API, keeping one option per
+ * logical neighborhood. The cleaned value (whitespace stripped, zero-padding
+ * preserved) is used as the option value so backend exact-match queries work
+ * and typos like "5 1" become "51" instead of being sent verbatim.
+ * Non-numeric values (text names, noise) are skipped.
+ */
+export function uniqueNeighborhoodOptions(
+  rawValues: string[],
+): Array<{ value: string; label: string }> {
+  const seen = new Map<number, { value: string; label: string }>();
+
+  for (const raw of rawValues) {
+    const cleaned = raw.trim().replace(/\s+/g, '').replace(/o$/i, '0');
+    if (!/^\d+$/.test(cleaned)) continue; // skip text names and noise
+    const n = parseInt(cleaned, 10);
+    if (n <= 0 || seen.has(n)) continue;
+    const name = NEIGHBORHOOD_NAMES[n];
+    const label = name ? `${name} (${n})` : `District ${n}`;
+    seen.set(n, { value: cleaned, label }); // cleaned removes spaces/typos (e.g. "5 1"→"51"), zero-padding preserved ("02"→"02")
+  }
+
+  return Array.from(seen.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([, opt]) => opt);
+}
+
+/**
  * Returns "Name (n)" for display, or falls back to the raw value.
  */
 export function neighborhoodLabel(raw: string | null | undefined): string {

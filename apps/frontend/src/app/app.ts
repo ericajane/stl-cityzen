@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { SearchComponent } from './components/search/search.component';
 import { ResultsTableComponent } from './components/results-table/results-table.component';
 import { MonthlyChartComponent } from './components/monthly-chart/monthly-chart.component';
+import { NeighborhoodMonthlyChartComponent } from './components/neighborhood-monthly-chart/neighborhood-monthly-chart.component';
 import { CsbRequestsService } from './services/csb-requests.service';
 import type { CsbRequestSearchParams, CsbRequestSearchResult } from '@org/types';
 
@@ -11,7 +12,7 @@ type Tab = 'search' | 'charts';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, SearchComponent, ResultsTableComponent, MonthlyChartComponent],
+  imports: [CommonModule, SearchComponent, ResultsTableComponent, MonthlyChartComponent, NeighborhoodMonthlyChartComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
