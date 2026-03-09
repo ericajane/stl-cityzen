@@ -6,6 +6,7 @@ import type {
   CsbRequestSearchResult,
   CsbFilterOptions,
   MonthlyCount,
+  GroupCount,
 } from '@org/types';
 import { environment } from '../../environments/environment';
 
@@ -31,5 +32,13 @@ export class CsbRequestsService {
 
   getFilterOptions(): Observable<CsbFilterOptions> {
     return this.http.get<CsbFilterOptions>(`${this.base}/filters`);
+  }
+
+  getGroupStats(neighborhood?: string, year?: number, month?: number): Observable<GroupCount[]> {
+    let params = new HttpParams();
+    if (neighborhood) params = params.set('neighborhood', neighborhood);
+    if (year)         params = params.set('year', String(year));
+    if (month)        params = params.set('month', String(month));
+    return this.http.get<GroupCount[]>(`${this.base}/stats/by-group`, { params });
   }
 }

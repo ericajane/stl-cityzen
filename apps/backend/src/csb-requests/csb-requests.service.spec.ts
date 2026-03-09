@@ -353,4 +353,60 @@ describe('CsbRequestsService', () => {
       expect(options.years).toEqual([2026, 2025, 2024]);
     });
   });
+
+  describe('getGroupStats', () => {
+    it('returns counts grouped by group_name, sorted descending', () => {
+      insertRow(db, { request_id: 'r1', group_name: 'Streets' });
+      insertRow(db, { request_id: 'r2', group_name: 'Animals' });
+      insertRow(db, { request_id: 'r3', group_name: 'Streets' });
+      insertRow(db, { request_id: 'r4', group_name: 'Streets' });
+
+      const result = service.getGroupStats();
+      expect(result[0]).toMatchObject({ group: 'Streets', count: 3 });
+      expect(result[1]).toMatchObject({ group: 'Animals', count: 1 });
+    });
+
+    it('filters by neighborhood', () => {
+      insertRow(db, { request_id: 'r1', group_name: 'Streets', neighborhood: '27' });
+      insertRow(db, { request_id: 'r2', group_name: 'Streets', neighborhood: '15' });
+      insertRow(db, { request_id: 'r3', group_name: 'Animals', neighborhood: '27' });
+
+      const result = service.getGroupStats('27');
+      const total = result.reduce((s, r) => s + r.count, 0);
+      expect(total).toBe(2);
+      expect(result.find((r) => r.group === 'Streets')?.count).toBe(1);
+    });
+
+    it('filters by year', () => {
+      insertRow(db, { request_id: 'r1', group_name: 'Streets', date_time_init: '2025-03-01T00:00:00.000Z' });
+      insertRow(db, { request_id: 'r2', group_name: 'Streets', date_time_init: '2026-03-01T00:00:00.000Z' });
+
+      const result = service.getGroupStats(undefined, 2025);
+      expect(result.reduce((s, r) => s + r.count, 0)).toBe(1);
+    });
+
+    it('filters by year and month', () => {
+      insertRow(db, { request_id: 'r1', group_name: 'Streets', date_time_init: '2025-01-01T00:00:00.000Z' });
+      insertRow(db, { request_id: 'r2', group_name: 'Streets', date_time_init: '2025-03-01T00:00:00.000Z' });
+      insertRow(db, { request_id: 'r3', group_name: 'Animals', date_time_init: '2025-01-15T00:00:00.000Z' });
+
+      const result = service.getGroupStats(undefined, 2025, 1);
+      const total = result.reduce((s, r) => s + r.count, 0);
+      expect(total).toBe(2);
+    });
+
+    it('excludes rows with null or empty group_name', () => {
+      insertRow(db, { request_id: 'r1', group_name: null });
+      insertRow(db, { request_id: 'r2', group_name: '' });
+      insertRow(db, { request_id: 'r3', group_name: 'Parks' });
+
+      const result = service.getGroupStats();
+      expect(result).toHaveLength(1);
+      expect(result[0].group).toBe('Parks');
+    });
+
+    it('returns empty array when no records match', () => {
+      expect(service.getGroupStats('99')).toEqual([]);
+    });
+  });
 });

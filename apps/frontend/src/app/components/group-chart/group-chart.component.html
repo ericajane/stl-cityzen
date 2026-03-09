@@ -1,0 +1,64 @@
+<div class="bg-white rounded-xl shadow p-6 space-y-4">
+  <h2 class="text-lg font-semibold text-gray-800">CSB Requests by Problem Type</h2>
+
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <!-- Neighborhood -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Neighborhood</label>
+      <select
+        [(ngModel)]="selectedNeighborhood"
+        (ngModelChange)="onFilterChange()"
+        name="neighborhood"
+        class="w-full rounded-md border-gray-300 shadow-sm focus:border-stl-blue focus:ring-stl-blue text-sm"
+      >
+        <option value="">All</option>
+        @for (n of neighborhoods; track n.value) {
+          <option [value]="n.value">{{ n.label }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Year -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+      <select
+        [(ngModel)]="selectedYear"
+        (ngModelChange)="onFilterChange()"
+        name="year"
+        class="w-full rounded-md border-gray-300 shadow-sm focus:border-stl-blue focus:ring-stl-blue text-sm"
+      >
+        <option [ngValue]="undefined">All</option>
+        @for (y of years; track y) {
+          <option [ngValue]="y">{{ y }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Month (only selectable when a year is chosen) -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Month</label>
+      <select
+        [(ngModel)]="selectedMonth"
+        (ngModelChange)="onFilterChange()"
+        name="month"
+        [disabled]="!selectedYear"
+        class="w-full rounded-md border-gray-300 shadow-sm focus:border-stl-blue focus:ring-stl-blue text-sm disabled:opacity-40"
+      >
+        <option [ngValue]="undefined">All</option>
+        @for (m of months; track m.value) {
+          <option [ngValue]="m.value">{{ m.label }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  @if (loading) {
+    <p class="text-sm text-gray-500">Loading…</p>
+  } @else if (groupData.length === 0) {
+    <p class="text-sm text-gray-500">No data found for the selected filters.</p>
+  } @else {
+    <div [style.height.px]="groupData.length * 40 + 60">
+      <canvas baseChart [data]="chartData" [options]="chartOptions" type="bar" style="height:100%"></canvas>
+    </div>
+  }
+</div>
