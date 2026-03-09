@@ -74,12 +74,22 @@ describe('CsbRequestsService', () => {
   });
 
   describe('getMonthlyStats', () => {
-    it('GET /csb-requests/stats/monthly', () => {
+    it('GET /csb-requests/stats/monthly with no neighborhood', () => {
       const stats: MonthlyCount[] = [{ year: 2025, month: 3, label: 'Mar 2025', count: 42 }];
       service.getMonthlyStats().subscribe((r) => expect(r).toEqual(stats));
 
       const req = httpMock.expectOne(`${BASE}/stats/monthly`);
       expect(req.request.method).toBe('GET');
+      expect(req.request.params.has('neighborhood')).toBe(false);
+      req.flush(stats);
+    });
+
+    it('sends neighborhood as query param when provided', () => {
+      const stats: MonthlyCount[] = [{ year: 2025, month: 3, label: 'Mar 2025', count: 10 }];
+      service.getMonthlyStats('27').subscribe((r) => expect(r).toEqual(stats));
+
+      const req = httpMock.expectOne((r) => r.url === `${BASE}/stats/monthly`);
+      expect(req.request.params.get('neighborhood')).toBe('27');
       req.flush(stats);
     });
   });

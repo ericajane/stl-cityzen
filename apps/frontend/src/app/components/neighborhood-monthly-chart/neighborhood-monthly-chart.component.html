@@ -1,0 +1,26 @@
+<div class="bg-white rounded-xl shadow p-6 space-y-4">
+  <h2 class="text-lg font-semibold text-gray-800">CSB Requests by Neighborhood &amp; Month</h2>
+
+  <div class="max-w-xs">
+    <label class="block text-sm font-medium text-gray-700 mb-1">Neighborhood</label>
+    <select
+      [(ngModel)]="selectedNeighborhood"
+      (ngModelChange)="onNeighborhoodChange()"
+      name="neighborhood"
+      class="w-full rounded-md border-gray-300 shadow-sm focus:border-stl-blue focus:ring-stl-blue text-sm"
+    >
+      <option value="">Select a neighborhood…</option>
+      @for (n of neighborhoods; track n.value) {
+        <option [value]="n.value">{{ n.label }}</option>
+      }
+    </select>
+  </div>
+
+  @if (loading) {
+    <p class="text-sm text-gray-500">Loading…</p>
+  } @else if (selectedNeighborhood && monthlyData.length === 0) {
+    <p class="text-sm text-gray-500">No completed-month data available for this neighborhood.</p>
+  } @else if (monthlyData.length > 0) {
+    <canvas baseChart [data]="chartData" [options]="chartOptions" type="bar"></canvas>
+  }
+</div>

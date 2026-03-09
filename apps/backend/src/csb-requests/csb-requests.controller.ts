@@ -59,8 +59,8 @@ export class CsbRequestsController {
    * Returns request counts grouped by year and month.
    */
   @Get('stats/monthly')
-  getMonthlyStats() {
-    return this.csbRequestsService.getMonthlyStats();
+  getMonthlyStats(@Query('neighborhood') neighborhood?: string) {
+    return this.csbRequestsService.getMonthlyStats(neighborhood);
   }
 
   /**

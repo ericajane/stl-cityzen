@@ -82,12 +82,20 @@ describe('CsbRequestsController', () => {
   });
 
   describe('getMonthlyStats', () => {
-    it('delegates to service', () => {
+    it('delegates to service without neighborhood', () => {
       const stats = [{ year: 2025, month: 3, label: 'Mar 2025', count: 42 }];
       mockGetMonthlyStats.mockReturnValue(stats);
 
-      expect(controller.getMonthlyStats()).toBe(stats);
-      expect(mockGetMonthlyStats).toHaveBeenCalled();
+      expect(controller.getMonthlyStats(undefined)).toBe(stats);
+      expect(mockGetMonthlyStats).toHaveBeenCalledWith(undefined);
+    });
+
+    it('passes neighborhood param to service', () => {
+      const stats = [{ year: 2025, month: 3, label: 'Mar 2025', count: 10 }];
+      mockGetMonthlyStats.mockReturnValue(stats);
+
+      expect(controller.getMonthlyStats('27')).toBe(stats);
+      expect(mockGetMonthlyStats).toHaveBeenCalledWith('27');
     });
   });
 

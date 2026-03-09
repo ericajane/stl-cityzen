@@ -118,7 +118,17 @@ export class CsbRequestsService implements OnModuleInit {
     return { data: rows.map(rowToRequest), total, page, pageSize };
   }
 
-  getMonthlyStats(): MonthlyCount[] {
+  getMonthlyStats(neighborhood?: string): MonthlyCount[] {
+    const conditions = [
+      "date_time_init IS NOT NULL AND date_time_init != ''",
+      "strftime('%Y-%m', date_time_init) < strftime('%Y-%m', 'now')",
+    ];
+    const bindings: unknown[] = [];
+    if (neighborhood) {
+      conditions.push('neighborhood = ?');
+      bindings.push(neighborhood);
+    }
+
     const rows = this.db
       .prepare(`
         SELECT
@@ -126,11 +136,11 @@ export class CsbRequestsService implements OnModuleInit {
           CAST(strftime('%m', date_time_init) AS INTEGER) AS month,
           COUNT(*) AS count
         FROM csb_requests
-        WHERE date_time_init IS NOT NULL AND date_time_init != ''
+        WHERE ${conditions.join(' AND ')}
         GROUP BY year, month
         ORDER BY year, month
       `)
-      .all() as { year: number; month: number; count: number }[];
+      .all(...bindings) as { year: number; month: number; count: number }[];
 
     return rows.map(({ year, month, count }) => ({
       year,
