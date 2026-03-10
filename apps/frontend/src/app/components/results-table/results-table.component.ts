@@ -12,13 +12,22 @@ import { neighborhoodLabel } from '../../constants/neighborhoods';
 export class ResultsTableComponent {
   readonly neighborhoodLabel = neighborhoodLabel;
 
-  @Input() result: CsbRequestSearchResult | null = null;
+  private _result: CsbRequestSearchResult | null = null;
+
+  @Input() set result(val: CsbRequestSearchResult | null) {
+    this._result = val;
+    this.expandedRows.clear();
+  }
+  get result(): CsbRequestSearchResult | null { return this._result; }
+
   @Input() loading = false;
   @Output() pageChange = new EventEmitter<number>();
 
+  expandedRows = new Set<string>();
+
   get totalPages(): number {
-    if (!this.result) return 0;
-    return Math.ceil(this.result.total / this.result.pageSize);
+    if (!this._result) return 0;
+    return Math.ceil(this._result.total / this._result.pageSize);
   }
 
   goToPage(page: number) {
@@ -27,5 +36,29 @@ export class ResultsTableComponent {
 
   trackById(_: number, row: CsbRequest) {
     return row.requestId;
+  }
+
+  toggleRow(id: string) {
+    if (this.expandedRows.has(id)) {
+      this.expandedRows.delete(id);
+    } else {
+      this.expandedRows.add(id);
+    }
+  }
+
+  formatDate(dateStr: string | null): string {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return isNaN(d.getTime())
+      ? dateStr
+      : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  hasExpandedContent(row: CsbRequest): boolean {
+    return !!(
+      (row.status === 'CLOSED' && row.dateTimeClosed) ||
+      (row.status !== 'CLOSED' && row.prjCompleteDate) ||
+      row.publicResolution
+    );
   }
 }

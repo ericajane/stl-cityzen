@@ -118,6 +118,151 @@ describe('ResultsTableComponent', () => {
     });
   });
 
+  describe('toggleRow()', () => {
+    it('adds a row id to expandedRows', () => {
+      component.toggleRow('r1');
+      expect(component.expandedRows.has('r1')).toBe(true);
+    });
+
+    it('removes a row id from expandedRows when toggled again', () => {
+      component.toggleRow('r1');
+      component.toggleRow('r1');
+      expect(component.expandedRows.has('r1')).toBe(false);
+    });
+
+    it('can expand multiple rows simultaneously', () => {
+      component.toggleRow('r1');
+      component.toggleRow('r2');
+      expect(component.expandedRows.has('r1')).toBe(true);
+      expect(component.expandedRows.has('r2')).toBe(true);
+    });
+  });
+
+  describe('result setter', () => {
+    it('clears expandedRows when result is set', () => {
+      component.toggleRow('r1');
+      component.toggleRow('r2');
+      component.result = makeResult();
+      expect(component.expandedRows.size).toBe(0);
+    });
+
+    it('clears expandedRows when result is set to null', () => {
+      component.toggleRow('r1');
+      component.result = null;
+      expect(component.expandedRows.size).toBe(0);
+    });
+  });
+
+  describe('formatDate()', () => {
+    it('returns empty string for null', () => {
+      expect(component.formatDate(null)).toBe('');
+    });
+
+    it('formats a valid ISO date string', () => {
+      expect(component.formatDate('2025-03-15T12:00:00.000Z')).toMatch(/Mar/);
+      expect(component.formatDate('2025-03-15T12:00:00.000Z')).toMatch(/2025/);
+    });
+
+    it('returns the original string for an invalid date', () => {
+      expect(component.formatDate('not-a-date')).toBe('not-a-date');
+    });
+  });
+
+  describe('hasExpandedContent()', () => {
+    it('returns true for CLOSED row with dateTimeClosed', () => {
+      const row = makeRequest({ status: 'CLOSED', dateTimeClosed: '2025-04-01T00:00:00.000Z' });
+      expect(component.hasExpandedContent(row)).toBe(true);
+    });
+
+    it('returns false for CLOSED row without dateTimeClosed', () => {
+      const row = makeRequest({ status: 'CLOSED', dateTimeClosed: null, publicResolution: '' });
+      expect(component.hasExpandedContent(row)).toBe(false);
+    });
+
+    it('returns true for non-CLOSED row with prjCompleteDate', () => {
+      const row = makeRequest({ status: 'OPEN', prjCompleteDate: '2025-06-01T00:00:00.000Z' });
+      expect(component.hasExpandedContent(row)).toBe(true);
+    });
+
+    it('returns false for non-CLOSED row without prjCompleteDate', () => {
+      const row = makeRequest({ status: 'OPEN', prjCompleteDate: null, publicResolution: '' });
+      expect(component.hasExpandedContent(row)).toBe(false);
+    });
+
+    it('returns true when publicResolution is present regardless of status', () => {
+      const row = makeRequest({ status: 'OPEN', publicResolution: 'Issue resolved.' });
+      expect(component.hasExpandedContent(row)).toBe(true);
+    });
+  });
+
+  describe('expanded row rendering', () => {
+    beforeEach(() => {
+      component.loading = false;
+    });
+
+    it('shows expanded detail row when row is toggled open', () => {
+      component.result = makeResult({
+        data: [makeRequest({ requestId: 'r1', status: 'CLOSED', dateTimeClosed: '2025-04-01T00:00:00.000Z' })],
+        total: 1,
+      });
+      fixture.detectChanges();
+      component.toggleRow('r1');
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain('Date Closed');
+    });
+
+    it('hides expanded detail row when row is toggled closed', () => {
+      component.result = makeResult({
+        data: [makeRequest({ requestId: 'r1', status: 'CLOSED', dateTimeClosed: '2025-04-01T00:00:00.000Z' })],
+        total: 1,
+      });
+      fixture.detectChanges();
+      component.toggleRow('r1');
+      fixture.detectChanges();
+      component.toggleRow('r1');
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).not.toContain('Date Closed');
+    });
+
+    it('shows Projected Completion for non-CLOSED row with prjCompleteDate', () => {
+      component.result = makeResult({
+        data: [makeRequest({ requestId: 'r1', status: 'OPEN', prjCompleteDate: '2025-06-01T00:00:00.000Z' })],
+        total: 1,
+      });
+      fixture.detectChanges();
+      component.toggleRow('r1');
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain('Projected Completion');
+    });
+
+    it('shows publicResolution when present', () => {
+      component.result = makeResult({
+        data: [makeRequest({ requestId: 'r1', publicResolution: 'Pothole was filled.' })],
+        total: 1,
+      });
+      fixture.detectChanges();
+      component.toggleRow('r1');
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain('Pothole was filled.');
+    });
+
+    it('shows fallback message when no expanded content available', () => {
+      component.result = makeResult({
+        data: [makeRequest({ requestId: 'r1', status: 'OPEN', prjCompleteDate: null, publicResolution: '' })],
+        total: 1,
+      });
+      fixture.detectChanges();
+      component.toggleRow('r1');
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain('No additional details available');
+    });
+  });
+
   describe('rendering rows', () => {
     beforeEach(() => {
       component.loading = false;

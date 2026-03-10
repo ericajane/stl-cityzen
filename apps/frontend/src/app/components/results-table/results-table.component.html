@@ -26,11 +26,17 @@
             <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wide text-xs">Ward</th>
             <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wide text-xs">Status</th>
             <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wide text-xs">Date Opened</th>
+            <th class="w-8"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
           @for (row of result.data; track trackById($index, row)) {
-            <tr class="hover:bg-gray-50 transition-colors">
+            <!-- Main row -->
+            <tr
+              (click)="toggleRow(row.requestId)"
+              class="cursor-pointer hover:bg-gray-50 transition-colors"
+              [class.bg-blue-50]="expandedRows.has(row.requestId)"
+            >
               <td class="px-4 py-3 text-gray-600 font-mono text-xs">{{ row.requestId }}</td>
               <td class="px-4 py-3 text-gray-800">{{ row.plainEnglishNameForProblemCode }}</td>
               <td class="px-4 py-3 text-gray-600">{{ row.probAddress }}</td>
@@ -45,7 +51,41 @@
                 </span>
               </td>
               <td class="px-4 py-3 text-gray-500 text-xs">{{ row.dateTimeInit }}</td>
+              <td class="px-2 py-3 text-gray-400 text-xs text-center select-none">
+                {{ expandedRows.has(row.requestId) ? '▲' : '▼' }}
+              </td>
             </tr>
+
+            <!-- Expanded detail row -->
+            @if (expandedRows.has(row.requestId)) {
+              <tr class="bg-blue-50 border-t-0">
+                <td colspan="8" class="px-6 py-3">
+                  <dl class="flex flex-wrap gap-x-8 gap-y-1 text-sm">
+                    @if (row.status === 'CLOSED' && row.dateTimeClosed) {
+                      <div class="flex gap-2">
+                        <dt class="font-medium text-gray-600">Date Closed:</dt>
+                        <dd class="text-gray-800">{{ formatDate(row.dateTimeClosed) }}</dd>
+                      </div>
+                    }
+                    @if (row.status !== 'CLOSED' && row.prjCompleteDate) {
+                      <div class="flex gap-2">
+                        <dt class="font-medium text-gray-600">Projected Completion:</dt>
+                        <dd class="text-gray-800">{{ formatDate(row.prjCompleteDate) }}</dd>
+                      </div>
+                    }
+                    @if (row.publicResolution) {
+                      <div class="flex gap-2 w-full">
+                        <dt class="font-medium text-gray-600 shrink-0">Resolution:</dt>
+                        <dd class="text-gray-800">{{ row.publicResolution }}</dd>
+                      </div>
+                    }
+                    @if (!hasExpandedContent(row)) {
+                      <div class="text-gray-400 italic">No additional details available.</div>
+                    }
+                  </dl>
+                </td>
+              </tr>
+            }
           }
         </tbody>
       </table>
