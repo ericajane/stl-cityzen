@@ -3,6 +3,7 @@ import Database from 'better-sqlite3';
 import { DATABASE_TOKEN } from '../database/database.module';
 import { CsbApiService, Open311Request } from './csb-api.service';
 import { CsbSyncService } from './csb-sync.service';
+import { NeighborhoodLookupService } from '../neighborhoods/neighborhood-lookup.service';
 
 /** Minimal in-memory DB with the csb_requests schema. */
 function makeDb(): Database.Database {
@@ -22,7 +23,8 @@ function makeDb(): Database.Database {
       prob_zip          TEXT,
       submit_to         TEXT,
       srx               REAL,
-      sry               REAL
+      sry               REAL,
+      neighborhood      TEXT
     )
   `);
   return db;
@@ -60,6 +62,7 @@ describe('CsbSyncService', () => {
         CsbSyncService,
         { provide: DATABASE_TOKEN, useValue: db },
         { provide: CsbApiService, useValue: { fetchSince: mockFetchSince } },
+        { provide: NeighborhoodLookupService, useValue: { lookup: jest.fn().mockReturnValue(null) } },
       ],
     }).compile();
 
@@ -122,6 +125,34 @@ describe('CsbSyncService', () => {
       const row = db.prepare('SELECT srx, sry FROM csb_requests WHERE request_id = ?').get('123') as Record<string, unknown>;
       expect(row['srx']).toBe(111111);
       expect(row['sry']).toBe(222222);
+    });
+
+    it('sets neighborhood from lookup when srx/sry are present', async () => {
+      const lookupSpy = jest.fn().mockReturnValue('27');
+      const module = await Test.createTestingModule({
+        providers: [
+          CsbSyncService,
+          { provide: DATABASE_TOKEN, useValue: db },
+          { provide: CsbApiService, useValue: { fetchSince: mockFetchSince } },
+          { provide: NeighborhoodLookupService, useValue: { lookup: lookupSpy } },
+        ],
+      }).compile();
+      const svc = module.get(CsbSyncService);
+
+      mockFetchSince.mockResolvedValue([makeRecord({ SERVICE_REQUEST_ID: 'nbr-1', LAT: 916000, LONG: 4280000 })]);
+      await svc.sync();
+
+      const row = db.prepare('SELECT neighborhood FROM csb_requests WHERE request_id = ?').get('nbr-1') as Record<string, unknown>;
+      expect(lookupSpy).toHaveBeenCalledWith(916000, 4280000);
+      expect(row['neighborhood']).toBe('27');
+    });
+
+    it('stores null neighborhood when srx/sry are absent', async () => {
+      mockFetchSince.mockResolvedValue([makeRecord({ SERVICE_REQUEST_ID: 'no-coord', LAT: undefined, LONG: undefined })]);
+      await service.sync();
+
+      const row = db.prepare('SELECT neighborhood FROM csb_requests WHERE request_id = ?').get('no-coord') as Record<string, unknown>;
+      expect(row['neighborhood']).toBeNull();
     });
 
     it('stores null for missing optional fields', async () => {

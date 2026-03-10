@@ -3,6 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import Database from 'better-sqlite3';
 import { DATABASE_TOKEN } from '../database/database.module';
 import { CsbApiService, Open311Request } from './csb-api.service';
+import { NeighborhoodLookupService } from '../neighborhoods/neighborhood-lookup.service';
 
 export interface SyncResult {
   fetched: number;
@@ -20,6 +21,7 @@ export class CsbSyncService {
   constructor(
     @Inject(DATABASE_TOKEN) private readonly db: Database.Database,
     private readonly apiService: CsbApiService,
+    private readonly neighborhoodLookup: NeighborhoodLookupService,
   ) {}
 
   /** Nightly sync at 2 AM local time */
@@ -90,25 +92,34 @@ export class CsbSyncService {
         request_id, status, description, plain_english_name,
         problem_code, public_resolution, date_time_init,
         date_time_closed, prj_complete_date, prob_address,
-        prob_zip, submit_to, srx, sry
+        prob_zip, submit_to, srx, sry, neighborhood
       ) VALUES (
         @request_id, @status, @description, @plain_english_name,
         @problem_code, @public_resolution, @date_time_init,
         @date_time_closed, @prj_complete_date, @prob_address,
-        @prob_zip, @submit_to, @srx, @sry
+        @prob_zip, @submit_to, @srx, @sry, @neighborhood
       )
     `);
 
-    const upsertBatch = this.db.transaction((rows: ReturnType<typeof mapRecord>[]) => {
+    const upsertBatch = this.db.transaction((rows: ReturnType<typeof this.enrichRecord>[]) => {
       for (const row of rows) stmt.run(row);
     });
 
     const mapped = records
       .filter((r) => r.SERVICE_REQUEST_ID)
-      .map(mapRecord);
+      .map((r) => this.enrichRecord(r));
 
     upsertBatch(mapped);
     return mapped.length;
+  }
+
+  private enrichRecord(r: Open311Request) {
+    const base = mapRecord(r);
+    const neighborhood =
+      base.srx != null && base.sry != null
+        ? (this.neighborhoodLookup.lookup(base.srx, base.sry) ?? null)
+        : null;
+    return { ...base, neighborhood };
   }
 }
 

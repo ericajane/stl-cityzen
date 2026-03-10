@@ -1,6 +1,7 @@
 import { Injectable, Inject, Logger, OnModuleInit } from '@nestjs/common';
 import Database from 'better-sqlite3';
 import { DATABASE_TOKEN } from '../database/database.module';
+import { NeighborhoodLookupService } from '../neighborhoods/neighborhood-lookup.service';
 import type {
   CsbRequest,
   CsbRequestSearchParams,
@@ -48,7 +49,10 @@ function rowToRequest(row: Record<string, unknown>): CsbRequest {
 export class CsbRequestsService implements OnModuleInit {
   private readonly logger = new Logger(CsbRequestsService.name);
 
-  constructor(@Inject(DATABASE_TOKEN) private readonly db: Database.Database) {}
+  constructor(
+    @Inject(DATABASE_TOKEN) private readonly db: Database.Database,
+    private readonly neighborhoodLookup: NeighborhoodLookupService,
+  ) {}
 
   onModuleInit() {
     const result = this.db
@@ -185,6 +189,41 @@ export class CsbRequestsService implements OnModuleInit {
       problemCodes: distinct('problem_code'),
       years,
     };
+  }
+
+  /**
+   * Fills in the neighborhood column for records that have srx/sry coordinates
+   * but no neighborhood value. Returns the number of records updated.
+   */
+  backfillNeighborhoods(): number {
+    const rows = this.db
+      .prepare(
+        `SELECT request_id, srx, sry FROM csb_requests
+         WHERE (neighborhood IS NULL OR neighborhood = '')
+           AND srx IS NOT NULL AND sry IS NOT NULL`,
+      )
+      .all() as { request_id: string; srx: number; sry: number }[];
+
+    const update = this.db.prepare(
+      'UPDATE csb_requests SET neighborhood = ? WHERE request_id = ?',
+    );
+
+    let updated = 0;
+    const run = this.db.transaction(() => {
+      for (const row of rows) {
+        const code = this.neighborhoodLookup.lookup(row.srx, row.sry);
+        if (code) {
+          update.run(code, row.request_id);
+          updated++;
+        }
+      }
+    });
+    run();
+
+    this.logger.log(
+      `Neighborhood backfill: ${updated} of ${rows.length} records updated`,
+    );
+    return updated;
   }
 
   getGroupStats(neighborhood?: string, year?: number, month?: number): GroupCount[] {

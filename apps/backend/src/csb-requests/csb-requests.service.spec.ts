@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import { Test } from '@nestjs/testing';
 import { DATABASE_TOKEN } from '../database/database.module';
 import { CsbRequestsService } from './csb-requests.service';
+import { NeighborhoodLookupService } from '../neighborhoods/neighborhood-lookup.service';
 
 function makeDb(): Database.Database {
   const db = new Database(':memory:');
@@ -75,6 +76,7 @@ describe('CsbRequestsService', () => {
       providers: [
         CsbRequestsService,
         { provide: DATABASE_TOKEN, useValue: db },
+        { provide: NeighborhoodLookupService, useValue: { lookup: jest.fn().mockReturnValue(null) } },
       ],
     }).compile();
 
@@ -407,6 +409,66 @@ describe('CsbRequestsService', () => {
 
     it('returns empty array when no records match', () => {
       expect(service.getGroupStats('99')).toEqual([]);
+    });
+  });
+
+  describe('backfillNeighborhoods', () => {
+    it('updates records that have srx/sry but no neighborhood', async () => {
+      const mockLookup = jest.fn().mockReturnValue('27');
+      const module = await Test.createTestingModule({
+        providers: [
+          CsbRequestsService,
+          { provide: DATABASE_TOKEN, useValue: db },
+          { provide: NeighborhoodLookupService, useValue: { lookup: mockLookup } },
+        ],
+      }).compile();
+      const svc = module.get(CsbRequestsService);
+
+      insertRow(db, { request_id: 'r1', neighborhood: null, srx: -10046885, sry: 4666741 });
+      insertRow(db, { request_id: 'r2', neighborhood: '15' }); // already has neighborhood
+
+      svc.backfillNeighborhoods();
+
+      const r1 = db.prepare('SELECT neighborhood FROM csb_requests WHERE request_id = ?').get('r1') as Record<string, unknown>;
+      const r2 = db.prepare('SELECT neighborhood FROM csb_requests WHERE request_id = ?').get('r2') as Record<string, unknown>;
+      expect(r1['neighborhood']).toBe('27');
+      expect(r2['neighborhood']).toBe('15'); // unchanged
+      expect(mockLookup).toHaveBeenCalledTimes(1);
+      expect(mockLookup).toHaveBeenCalledWith(-10046885, 4666741);
+    });
+
+    it('skips records where lookup returns null', () => {
+      insertRow(db, { request_id: 'r1', neighborhood: null, srx: 0, sry: 0 });
+
+      service.backfillNeighborhoods(); // mock returns null by default
+
+      const row = db.prepare('SELECT neighborhood FROM csb_requests WHERE request_id = ?').get('r1') as Record<string, unknown>;
+      expect(row['neighborhood']).toBeNull();
+    });
+
+    it('skips records without coordinates', () => {
+      insertRow(db, { request_id: 'r1', neighborhood: null, srx: null, sry: null });
+
+      service.backfillNeighborhoods();
+
+      const row = db.prepare('SELECT neighborhood FROM csb_requests WHERE request_id = ?').get('r1') as Record<string, unknown>;
+      expect(row['neighborhood']).toBeNull();
+    });
+
+    it('returns the count of updated records', async () => {
+      const module = await Test.createTestingModule({
+        providers: [
+          CsbRequestsService,
+          { provide: DATABASE_TOKEN, useValue: db },
+          { provide: NeighborhoodLookupService, useValue: { lookup: jest.fn().mockReturnValue('42') } },
+        ],
+      }).compile();
+      const svc = module.get(CsbRequestsService);
+
+      insertRow(db, { request_id: 'r1', neighborhood: null, srx: -10046885, sry: 4666741 });
+      insertRow(db, { request_id: 'r2', neighborhood: null, srx: -10040000, sry: 4670000 });
+
+      expect(svc.backfillNeighborhoods()).toBe(2);
     });
   });
 });
