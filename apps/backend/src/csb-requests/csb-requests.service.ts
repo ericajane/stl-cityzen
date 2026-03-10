@@ -11,6 +11,19 @@ import type {
   GroupCount,
 } from '@org/types';
 
+/**
+ * Normalizes a raw neighborhood string to a zero-padded 2-digit code (e.g. "01", "27"),
+ * or null for junk values (non-numeric, out-of-range, whitespace-only, etc.).
+ */
+export function normalizeNeighborhood(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const cleaned = raw.trim().replace(/\s+/g, '').replace(/o$/i, '0');
+  if (!/^\d+$/.test(cleaned)) return null;
+  const n = parseInt(cleaned, 10);
+  if (n < 1 || n > 99) return null;
+  return cleaned.padStart(2, '0');
+}
+
 /** Maps DB snake_case column names to CsbRequest camelCase fields. */
 function rowToRequest(row: Record<string, unknown>): CsbRequest {
   return {
@@ -63,6 +76,40 @@ export class CsbRequestsService implements OnModuleInit {
         ? `SQLite ready — ${result.n.toLocaleString()} records`
         : 'SQLite ready — database is empty. Run: npx nx run backend:ingest',
     );
+    this.migrateNeighborhoods();
+  }
+
+  /**
+   * One-time migration: normalizes all neighborhood values in the DB to a
+   * consistent zero-padded 2-digit format (e.g. "1" → "01", "5 1" → "51",
+   * "56o" → null). Runs at startup; skips records that are already correct.
+   */
+  private migrateNeighborhoods(): void {
+    const rows = this.db
+      .prepare(
+        "SELECT DISTINCT neighborhood FROM csb_requests WHERE neighborhood IS NOT NULL AND neighborhood != ''",
+      )
+      .all() as { neighborhood: string }[];
+
+    const update = this.db.prepare(
+      'UPDATE csb_requests SET neighborhood = ? WHERE neighborhood = ?',
+    );
+
+    let changed = 0;
+    const migrate = this.db.transaction(() => {
+      for (const { neighborhood } of rows) {
+        const normalized = normalizeNeighborhood(neighborhood);
+        if (normalized !== neighborhood) {
+          update.run(normalized, neighborhood);
+          changed++;
+        }
+      }
+    });
+    migrate();
+
+    if (changed > 0) {
+      this.logger.log(`Neighborhood migration: normalized ${changed} distinct value(s)`);
+    }
   }
 
   search(params: CsbRequestSearchParams): CsbRequestSearchResult {

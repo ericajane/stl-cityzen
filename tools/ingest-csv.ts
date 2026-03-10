@@ -56,6 +56,18 @@ const COLUMN_MAP: Record<string, string> = {
 
 const NUMERIC_COLS = new Set(['srx', 'sry']);
 
+/**
+ * Normalizes a raw neighborhood string to a zero-padded 2-digit code
+ * (e.g. "1" → "01", "5 1" → "51", "56o" → null, "-" → null).
+ */
+function normalizeNeighborhood(raw: string): string | null {
+  const cleaned = raw.trim().replace(/\s+/g, '').replace(/o$/i, '0');
+  if (!/^\d+$/.test(cleaned)) return null;
+  const n = parseInt(cleaned, 10);
+  if (n < 1 || n > 99) return null;
+  return cleaned.padStart(2, '0');
+}
+
 // ---------------------------------------------------------------------------
 // DB setup
 // ---------------------------------------------------------------------------
@@ -150,6 +162,7 @@ async function ingestFile(db: Database.Database, filePath: string, fileName: str
             const n = parseFloat(raw);
             return isNaN(n) ? null : n;
           }
+          if (dbCol === 'neighborhood') return normalizeNeighborhood(raw);
           return raw;
         });
 

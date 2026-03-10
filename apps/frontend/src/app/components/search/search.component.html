@@ -23,8 +23,8 @@
         class="w-full rounded-md border-gray-300 shadow-sm focus:border-stl-blue focus:ring-stl-blue text-sm"
       >
         <option value="">All</option>
-        @for (n of filters.neighborhoods; track n) {
-          <option [value]="n">{{ neighborhoodLabel(n) }}</option>
+        @for (opt of neighborhoodOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
         }
       </select>
     </div>
