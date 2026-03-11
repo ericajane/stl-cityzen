@@ -4,6 +4,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { DatabaseModule } from '../database/database.module';
 import { CsbRequestsModule } from '../csb-requests/csb-requests.module';
 import { CsbApiModule } from '../csb-api/csb-api.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { CsbApiModule } from '../csb-api/csb-api.module';
     DatabaseModule,
     CsbRequestsModule,
     CsbApiModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
