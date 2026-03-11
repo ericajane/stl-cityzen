@@ -1,6 +1,7 @@
 import { Injectable, Inject, Logger, OnModuleInit } from '@nestjs/common';
 import Database from 'better-sqlite3';
 import { DATABASE_TOKEN } from '../database/database.module';
+import { NeighborhoodLookupService } from '../neighborhoods/neighborhood-lookup.service';
 import type {
   CsbRequest,
   CsbRequestSearchParams,
@@ -9,6 +10,19 @@ import type {
   MonthlyCount,
   GroupCount,
 } from '@org/types';
+
+/**
+ * Normalizes a raw neighborhood string to a zero-padded 2-digit code (e.g. "01", "27"),
+ * or null for junk values (non-numeric, out-of-range, whitespace-only, etc.).
+ */
+export function normalizeNeighborhood(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const cleaned = raw.trim().replace(/\s+/g, '').replace(/o$/i, '0');
+  if (!/^\d+$/.test(cleaned)) return null;
+  const n = parseInt(cleaned, 10);
+  if (n < 1 || n > 99) return null;
+  return cleaned.padStart(2, '0');
+}
 
 /** Maps DB snake_case column names to CsbRequest camelCase fields. */
 function rowToRequest(row: Record<string, unknown>): CsbRequest {
@@ -48,7 +62,10 @@ function rowToRequest(row: Record<string, unknown>): CsbRequest {
 export class CsbRequestsService implements OnModuleInit {
   private readonly logger = new Logger(CsbRequestsService.name);
 
-  constructor(@Inject(DATABASE_TOKEN) private readonly db: Database.Database) {}
+  constructor(
+    @Inject(DATABASE_TOKEN) private readonly db: Database.Database,
+    private readonly neighborhoodLookup: NeighborhoodLookupService,
+  ) {}
 
   onModuleInit() {
     const result = this.db
@@ -59,6 +76,40 @@ export class CsbRequestsService implements OnModuleInit {
         ? `SQLite ready — ${result.n.toLocaleString()} records`
         : 'SQLite ready — database is empty. Run: npx nx run backend:ingest',
     );
+    this.migrateNeighborhoods();
+  }
+
+  /**
+   * One-time migration: normalizes all neighborhood values in the DB to a
+   * consistent zero-padded 2-digit format (e.g. "1" → "01", "5 1" → "51",
+   * "56o" → null). Runs at startup; skips records that are already correct.
+   */
+  private migrateNeighborhoods(): void {
+    const rows = this.db
+      .prepare(
+        "SELECT DISTINCT neighborhood FROM csb_requests WHERE neighborhood IS NOT NULL AND neighborhood != ''",
+      )
+      .all() as { neighborhood: string }[];
+
+    const update = this.db.prepare(
+      'UPDATE csb_requests SET neighborhood = ? WHERE neighborhood = ?',
+    );
+
+    let changed = 0;
+    const migrate = this.db.transaction(() => {
+      for (const { neighborhood } of rows) {
+        const normalized = normalizeNeighborhood(neighborhood);
+        if (normalized !== neighborhood) {
+          update.run(normalized, neighborhood);
+          changed++;
+        }
+      }
+    });
+    migrate();
+
+    if (changed > 0) {
+      this.logger.log(`Neighborhood migration: normalized ${changed} distinct value(s)`);
+    }
   }
 
   search(params: CsbRequestSearchParams): CsbRequestSearchResult {
@@ -185,6 +236,41 @@ export class CsbRequestsService implements OnModuleInit {
       problemCodes: distinct('problem_code'),
       years,
     };
+  }
+
+  /**
+   * Fills in the neighborhood column for records that have srx/sry coordinates
+   * but no neighborhood value. Returns the number of records updated.
+   */
+  backfillNeighborhoods(): number {
+    const rows = this.db
+      .prepare(
+        `SELECT request_id, srx, sry FROM csb_requests
+         WHERE (neighborhood IS NULL OR neighborhood = '')
+           AND srx IS NOT NULL AND sry IS NOT NULL`,
+      )
+      .all() as { request_id: string; srx: number; sry: number }[];
+
+    const update = this.db.prepare(
+      'UPDATE csb_requests SET neighborhood = ? WHERE request_id = ?',
+    );
+
+    let updated = 0;
+    const run = this.db.transaction(() => {
+      for (const row of rows) {
+        const code = this.neighborhoodLookup.lookup(row.srx, row.sry);
+        if (code) {
+          update.run(code, row.request_id);
+          updated++;
+        }
+      }
+    });
+    run();
+
+    this.logger.log(
+      `Neighborhood backfill: ${updated} of ${rows.length} records updated`,
+    );
+    return updated;
   }
 
   getGroupStats(neighborhood?: string, year?: number, month?: number): GroupCount[] {

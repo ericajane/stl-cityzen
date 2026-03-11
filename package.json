@@ -32,6 +32,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/jest": "^30.0.0",
     "@types/node": "20.19.9",
+    "@types/proj4": "^2.5.6",
     "@typescript-eslint/utils": "^8.40.0",
     "angular-eslint": "^21.0.1",
     "autoprefixer": "^10.4.27",
@@ -73,6 +74,7 @@
     "chart.js": "^4.5.1",
     "csv-parse": "^6.1.0",
     "ng2-charts": "^6.0.1",
+    "proj4": "^2.20.4",
     "reflect-metadata": "^0.1.13",
     "rxjs": "~7.8.0",
     "zone.js": "^0.14.10"

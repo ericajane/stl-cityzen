@@ -98,4 +98,15 @@ export class CsbRequestsController {
   async sync() {
     return this.syncService.sync();
   }
+
+  /**
+   * POST /api/csb-requests/backfill-neighborhoods
+   * Fills in missing neighborhood codes for records that have srx/sry coordinates.
+   */
+  @Post('backfill-neighborhoods')
+  @HttpCode(200)
+  backfillNeighborhoods() {
+    const updated = this.csbRequestsService.backfillNeighborhoods();
+    return { updated };
+  }
 }

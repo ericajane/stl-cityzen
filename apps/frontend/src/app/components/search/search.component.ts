@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import type { CsbFilterOptions, CsbRequestSearchParams } from '@org/types';
 import { CsbRequestsService } from '../../services/csb-requests.service';
-import { neighborhoodLabel } from '../../constants/neighborhoods';
+import { neighborhoodLabel, uniqueNeighborhoodOptions } from '../../constants/neighborhoods';
 
 @Component({
   selector: 'app-search',
@@ -25,6 +25,8 @@ export class SearchComponent implements OnInit {
     problemCodes: [],
     years: [],
   };
+
+  neighborhoodOptions: Array<{ value: string; label: string }> = [];
 
   readonly neighborhoodLabel = neighborhoodLabel;
 
@@ -52,6 +54,7 @@ export class SearchComponent implements OnInit {
   ngOnInit() {
     this.csbService.getFilterOptions().subscribe((f) => {
       this.filters = f;
+      this.neighborhoodOptions = uniqueNeighborhoodOptions(f.neighborhoods);
       this.cdr.detectChanges();
     });
   }
