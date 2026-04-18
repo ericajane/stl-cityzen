@@ -63,6 +63,13 @@ export const DATABASE_TOKEN = 'SQLITE_DATABASE';
           CREATE INDEX IF NOT EXISTS idx_status          ON csb_requests (status);
           CREATE INDEX IF NOT EXISTS idx_problem_code    ON csb_requests (problem_code);
           CREATE INDEX IF NOT EXISTS idx_group_name      ON csb_requests (group_name);
+
+          CREATE TABLE IF NOT EXISTS users (
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            email         TEXT    NOT NULL UNIQUE,
+            password_hash TEXT    NOT NULL,
+            created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+          );
         `);
 
         return db;
