@@ -1,5 +1,4 @@
 data/
-apps/backend/
 *.db
 *.db-shm
 *.db-wal
